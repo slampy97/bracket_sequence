@@ -1,47 +1,36 @@
-class BracketChecker {
-    private fun checkIsCorrectSequence(sequenceString: String) {
-        val correctSymbols = charArrayOf('[',']','{','}','(',')')
-        for (sym in sequenceString) {
-            if (sym !in correctSymbols) {
-                throw IllegalArgumentException("Sequence contains not correct sym")
-            }
-        }
-    }
-
-    companion object {
-        fun check(sequenceString: String): Boolean {
-            try {
-                BracketChecker().checkIsCorrectSequence(sequenceString)
-            } catch (e: IllegalArgumentException) {
-                println(e.message)
-                return false
-            }
-            val stack = ArrayDeque<Char>()
-            val openBrackets = charArrayOf('[', '{', '(')
-            val linksOpenWithClosedBrackets = mapOf(']' to '[', '}' to '[', ')' to '(')
-            for (sym in sequenceString) {
-                if (sym in openBrackets) {
-                    stack.add(sym)
-                } else {
-                    if (stack.isEmpty()) {
-                        return false;
-                    }
-                    if (stack.last() != linksOpenWithClosedBrackets[sym]) {
-                        return false;
-                    }
-                    stack.removeLast()
-                }
-            }
-            return true
-        }
-    }
-
+private fun checkIsCorrectSequence(sequenceString: String): Boolean {
+    val correctSymbols = charArrayOf('[', ']', '{', '}', '(', ')')
+    return sequenceString.all { it in correctSymbols }
 }
 
-fun main(args: Array<String>) {
-    val sequenceString : String? = readLine()
-    if (sequenceString.equals(null)) {
-        throw IllegalArgumentException("line should not be null")
+private fun getMatchedBracket(bracket: Char): Char {
+    return when (bracket) {
+        ']' -> '['
+        '}' -> '{'
+        ')' -> '('
+        else -> error("impossible event has happened")
     }
-    println(BracketChecker.check(sequenceString!!))
+}
+
+fun validate(sequenceString: String): Boolean {
+    require(checkIsCorrectSequence(sequenceString)) { "Sequence contains incorrect characters" }
+    val stack = ArrayDeque<Char>()
+    val openBrackets = charArrayOf('[', '{', '(')
+    for (sym in sequenceString) {
+        when {
+            sym in openBrackets -> {
+                stack.add(sym)
+                continue
+            }
+            stack.isEmpty() || stack.last() != getMatchedBracket(sym) -> return false
+            else -> stack.removeLast()
+        }
+    }
+    return stack.isEmpty()
+}
+
+
+fun main(args: Array<String>) {
+    val sequenceString: String = checkNotNull(readLine()) {"Line should not be null"}
+    println(validate(sequenceString))
 }
